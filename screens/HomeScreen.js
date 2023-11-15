@@ -134,7 +134,7 @@ export default function HomeScreen() {
             </Text>
             {/* weather condition */}
             <Text className='text-white text-center text-xl ml-5 tracking-widest'>
-              {current?.condition.text}
+              {current?.condition?.text}
             </Text>
           </View>
           {/* other informations */}
@@ -146,7 +146,7 @@ export default function HomeScreen() {
                 className='h-6 w-6'
               />
               <Text className='text-white font-semibold text-base'>
-                {current.wind_kph}Km
+                {current?.wind_kph}Km
               </Text>
             </View>
             {/* humidity */}
@@ -156,7 +156,7 @@ export default function HomeScreen() {
                 className='h-6 w-6'
               />
               <Text className='text-white font-semibold text-base'>
-                {current.humidity}%
+                {current?.humidity}%
               </Text>
             </View>
             {/* Sunrise */}
@@ -180,44 +180,35 @@ export default function HomeScreen() {
           </View>
           <ScrollView
             horizontal
-            contentContainerStyle={{ paddingHorizontal: 35 }}
+            contentContainerStyle={{ paddingHorizontal: 25 }}
             showsHorizontalScrollIndicator={false}
           >
-            <View
-              className='flex justify-center items-center w-24 rounded-3xl py-3 space-y-1 mr-4'
-              style={{ backgroundColor: theme.bgWhite(0.15) }}
-            >
-              <Image
-                source={require("../assets/images/heavyrain.png")}
-                className='h-11 w-11'
-              />
-              <Text className='text-white'>Monday</Text>
-              <Text className='text-white text-xl font-semibold'>16&#176;</Text>
-            </View>
+            {weather?.forecast?.forecastday?.map((item, index) => {
+              const date = new Date(item.date);
+              const options = { weekday: "long" };
+              let dayName = date.toLocaleDateString("fr-FR", options);
+              dayName = dayName.split(" ")[0];
+              if (index === 0) return null;
+              return (
+                <View
+                  key={index}
+                  className='flex justify-center items-center w-24 rounded-3xl py-3 space-y-1 mr-4'
+                  style={{ backgroundColor: theme.bgWhite(0.15) }}
+                >
+                  <Image
+                    source={
+                      weatherImages[item?.day?.condition?.text || "other"]
+                    }
+                    className='h-11 w-11'
+                  />
+                  <Text className='text-white'>{dayName}</Text>
 
-            <View
-              className='flex justify-center items-center w-24 rounded-3xl py-3 space-y-1 mr-4'
-              style={{ backgroundColor: theme.bgWhite(0.15) }}
-            >
-              <Image
-                source={require("../assets/images/heavyrain.png")}
-                className='h-11 w-11'
-              />
-              <Text className='text-white'>Tuesady</Text>
-              <Text className='text-white text-xl font-semibold'>16&#176;</Text>
-            </View>
-
-            <View
-              className='flex justify-center items-center w-24 rounded-3xl py-3 space-y-1 mr-4'
-              style={{ backgroundColor: theme.bgWhite(0.15) }}
-            >
-              <Image
-                source={require("../assets/images/heavyrain.png")}
-                className='h-11 w-11'
-              />
-              <Text className='text-white'>Wednesday</Text>
-              <Text className='text-white text-xl font-semibold'>16&#176;</Text>
-            </View>
+                  <Text className='text-white text-xl font-semibold'>
+                    {item?.day?.avgtemp_c}&#176;
+                  </Text>
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
       </SafeAreaView>
