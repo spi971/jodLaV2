@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchLocation, fetchWeather } from "../api/weather";
 import { FORCAST_NUMBERS_OF_DAYS, weatherImages } from "../constants";
 import { theme } from "../theme";
+import { getData, storeData } from "../utils/asyncStorage";
 
 export default function HomeScreen() {
   const [showSearch, setShowSearch] = useState(false);
@@ -36,6 +37,7 @@ export default function HomeScreen() {
     }).then((data) => {
       setWeather(data);
       setLoading(false);
+      storeData("city", location.name);
     });
   };
 
@@ -52,8 +54,11 @@ export default function HomeScreen() {
   }, []);
 
   const fetchWeatherData = async () => {
+    const storedCity = await getData('city');
+    const cityName =  storedCity ? storedCity : "Paris";
+    
     fetchWeather({
-      cityName: "Paris",
+      cityName,
       days: FORCAST_NUMBERS_OF_DAYS,
     }).then((data) => {
       setWeather(data);
@@ -75,7 +80,7 @@ export default function HomeScreen() {
       />
       {loading ? (
         <View className='flex-1 flex-row justify-center items-center'>
-          <Progress.CircleSnail thickness={10} size={140} color="#0bb3b2"/>
+          <Progress.CircleSnail thickness={10} size={140} color='#0bb3b2' />
         </View>
       ) : (
         <SafeAreaView className='flex flex-1'>
