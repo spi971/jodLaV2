@@ -7,7 +7,7 @@ const forecast = (params) =>
 const searchLocation = (params) =>
   `https://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${params.cityName}`;
 
-const apicall = async (endpoint) => {
+const apiCall = async (endpoint) => {
   const options = {
     method: "GET",
     url: endpoint,
@@ -18,14 +18,16 @@ const apicall = async (endpoint) => {
     return response.data;
   } catch (error) {
     console.log("error", error);
-    return null;
+    return {};
   }
 };
 
 export const fetchWeather = (params) => {
-  return apicall(forecast(params));
+  let forecastUrl = forecast(params);
+  return apiCall(forecastUrl);
 };
 
 export const fetchLocation = (params) => {
-    return apicall(searchLocation(params));
-  };
+  let locationsUrl = searchLocation(params);
+  return apiCall(locationsUrl);
+};

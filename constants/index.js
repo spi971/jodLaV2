@@ -1,5 +1,7 @@
 export const API_KEY = "e181114c999748e3a9c100907231511";
 
+export const FORCAST_NUMBERS_OF_DAYS = '7';
+
 export const weatherImages = {
   "Partly cloudy": require("../assets/images/partlycloudy.png"),
   "Moderate rain": require("../assets/images/moderaterain.png"),

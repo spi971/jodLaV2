@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import { debounce } from "lodash";
+import React, { useCallback, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -14,14 +15,38 @@ import {
 } from "react-native-heroicons/outline";
 import { MapPinIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { fetchLocation, fetchWeather } from "../api/weather";
+import { FORCAST_NUMBERS_OF_DAYS, weatherImages } from "../constants";
 import { theme } from "../theme";
 
 export default function HomeScreen() {
   const [showSearch, setShowSearch] = useState(false);
-  const [locations, setLocations] = useState([1, 2, 3]);
+  const [locations, setLocations] = useState([]);
+  const [weather, setWeather] = useState({});
+
   const handleLocation = (location) => {
-    console.log(location);
+    setLocations([]);
+    setShowSearch(false);
+    fetchWeather({
+      cityName: location.name,
+      days: FORCAST_NUMBERS_OF_DAYS,
+    }).then((data) => {
+      setWeather(data);
+      console.log("[data]", data);
+    });
   };
+
+  const handleSearch = (city) => {
+    if (city.length > 2) {
+      fetchLocation({ cityName: city }).then((data) => {
+        setLocations(data);
+      });
+    }
+  };
+
+  const handleTextDebounce = useCallback(debounce(handleSearch, 1200), []);
+
+  const { current, location } = weather;
 
   return (
     <View className='flex-1 relative'>
@@ -42,6 +67,7 @@ export default function HomeScreen() {
           >
             {showSearch ? (
               <TextInput
+                onChangeText={handleTextDebounce}
                 placeholder='Search city'
                 placeholderTextColor={"lightgray"}
                 className='flex-1 pl-6 h-10 pb-1 text-base text-white'
@@ -73,7 +99,7 @@ export default function HomeScreen() {
                   >
                     <MapPinIcon size='20' color='gray' />
                     <Text className='text-black text-lg ml-2'>
-                      Paris, France
+                      {location?.name}, {location?.country}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -86,24 +112,29 @@ export default function HomeScreen() {
         <View className='flex justify-around mx-4 flex-1 mb-2'>
           {/* location details  */}
           <Text className='text-white text-center text-2xl font-bold'>
-            Paris,
-            <Text className='text-gray-400 text-lg font-semibold'>France</Text>
+            {location?.name},&nbsp;
+            <Text className='text-gray-400 text-lg font-semibold'>
+              {location?.country}
+            </Text>
           </Text>
           {/* weather image */}
           <View className='flex-row justify-center'>
             <Image
-              source={require("../assets/images/cloud.png")}
+              source={weatherImages[current?.condition?.text || "other"]}
               className='w-52 h-52'
             />
           </View>
           {/* temperature */}
           <View className='space-y-2'>
             <Text className='text-white text-center font-bold text-6xl ml-5'>
-              12&#176;
+              {current?.temp_c}&#176;
+            </Text>
+            <Text className='text-white text-center font-bold text-2xl ml-5'>
+              Feels like {current?.feelslike_c}&#176;
             </Text>
             {/* weather condition */}
             <Text className='text-white text-center text-xl ml-5 tracking-widest'>
-              Cloudy
+              {current?.condition.text}
             </Text>
           </View>
           {/* other informations */}
@@ -114,7 +145,9 @@ export default function HomeScreen() {
                 source={require("../assets/icons/wind.png")}
                 className='h-6 w-6'
               />
-              <Text className='text-white font-semibold text-base'>22km</Text>
+              <Text className='text-white font-semibold text-base'>
+                {current.wind_kph}Km
+              </Text>
             </View>
             {/* humidity */}
             <View className='flex-row space-x-2 items-center'>
@@ -122,7 +155,9 @@ export default function HomeScreen() {
                 source={require("../assets/icons/drop.png")}
                 className='h-6 w-6'
               />
-              <Text className='text-white font-semibold text-base'>22%</Text>
+              <Text className='text-white font-semibold text-base'>
+                {current.humidity}%
+              </Text>
             </View>
             {/* Sunrise */}
             <View className='flex-row space-x-2 items-center'>
@@ -131,7 +166,7 @@ export default function HomeScreen() {
                 className='h-6 w-6'
               />
               <Text className='text-white font-semibold text-base'>
-                6:05 AM
+                {weather?.forecast?.forecastday[0]?.astro?.sunrise}
               </Text>
             </View>
           </View>
